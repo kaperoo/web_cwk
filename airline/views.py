@@ -53,11 +53,14 @@ def flight_search(request):
         departure_date = datetime.datetime.strptime(data.get('departure_date'), '%Y-%m-%d').date()
         number_of_people = data.get('number_of_people')
 
+        # find flights that match the origin, destination and departure date
         flights = Flight.objects.filter(
             origin__code=origin,
             destination__code=destination,
             departure_time__date=departure_date
         ).annotate(available_seats=Count('seats')).filter(available_seats__gte=number_of_people)
+
+        print(flights)
 
         flight_data = []
 
@@ -142,7 +145,7 @@ def book_flight(request, flight_id):
                 surname=passenger_data['surname'],
                 passport=passenger_data['passportID'],
                 seat=seat,
-                luggage=luggage_list
+                luggages=luggage_list
             )
             passenger.save()
             passenger.luggage_set.set(luggage_list)
