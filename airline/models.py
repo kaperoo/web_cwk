@@ -79,4 +79,4 @@ class Booking(models.Model):
     start_time = models.DateTimeField()
 
     def __str__(self):
-        return f"{self.customer} - {self.flight}"
+        return f"{self.customers} - {self.flight}"
