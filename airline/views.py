@@ -25,12 +25,30 @@ def flight_list(request):
 
         luggage_pricing = {luggage.luggage_type: float(luggage.price) for luggage in Luggage.objects.all()}
 
+        origin = {
+            'id': flight.origin.id,
+            'name': flight.origin.name,
+            'city': flight.origin.city,
+            'country': flight.origin.country,
+            'code': flight.origin.code,
+            'terminals': flight.origin.terminals
+        }
+
+        destination = {
+            'id': flight.destination.id,
+            'name': flight.destination.name,
+            'city': flight.destination.city,
+            'country': flight.destination.country,
+            'code': flight.destination.code,
+            'terminals': flight.destination.terminals
+        }
+
         flight_data.append({
             'flight_id': flight.id,
             'price': flight.price,
             'airline': 'Air Polonia',
-            'origin': flight.origin.code,
-            'destination': flight.destination.code,
+            'origin': origin,
+            'destination': destination,
             'departure_time': flight.departure_time.isoformat(),
             'arrival_time': flight.arrival_time.isoformat(),
             'duration': int(flight.duration.total_seconds() / 60),
@@ -157,7 +175,7 @@ def book_flight(request, flight_id):
 
             passenger = Customer(
                 first_name=passenger_data['first_name'],
-                surname=passenger_data['surname'],
+                surname=passenger_data['last_name'],
                 passport=passenger_data['passportID'],
                 seat=seat
             )
@@ -184,7 +202,7 @@ def book_flight(request, flight_id):
                 {
                     'customer_id': passenger.id,
                     'first_name': passenger.first_name,
-                    'surname': passenger.surname,
+                    'last_name': passenger.surname,
                     'passportID': passenger.passport,
                     'seat': passenger.seat.id,
                     'luggage': [{'type': cl.luggage.luggage_type, 'quantity': cl.quantity} for cl in passenger.customerluggage_set.all()]
@@ -251,10 +269,10 @@ def confirm_payment(request, booking_id):
                 passenger_list.append({
                     'customer_id': passenger.id,
                     'first_name': passenger.first_name,
-                    'surname': passenger.surname,
+                    'last_name': passenger.surname,
                     'passport': passenger.passport,
                     'seat': passenger.seat.name,
-                    'luggage': passenger.luggage
+                    'luggage': [{'type': cl.luggage.luggage_type, 'quantity': cl.quantity} for cl in passenger.customerluggage_set.all()]
                 })
 
             booking_data = {
@@ -291,7 +309,7 @@ def booking_details(request, booking_id):
         passenger_list.append({
             'customer_id': passenger.id,
             'first_name': passenger.first_name,
-            'surname': passenger.surname,
+            'last_name': passenger.surname,
             'passport': passenger.passport,
             'seat': passenger.seat.name,
             'luggage': luggage_list

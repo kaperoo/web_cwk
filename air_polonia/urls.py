@@ -19,11 +19,11 @@ import airline.views as views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('flight_list/', views.flight_list, name='flight_list'),
-    path('flight/', views.flight_search, name='flight'),
-    path('book/<int:flight_id>/', views.book_flight, name='book_flight'),
-    path('pay/<int:booking_id>/', views.confirm_payment, name='confirm_payment'),
-    path('delete/<int:booking_id>/', views.delete_booking, name='delete_booking'),
-    path('booking_details/<int:booking_id>/', views.booking_details, name='booking_details'),
-    path('airports/', views.airports, name='airports'),
+    path('api/flight_list', views.flight_list, name='flight_list'),
+    path('api/flight', views.flight_search, name='flight'),
+    path('api/book/<int:flight_id>/', views.book_flight, name='book_flight'),
+    path('api/pay/<int:booking_id>/', views.confirm_payment, name='confirm_payment'),
+    path('api/delete/<int:booking_id>/', views.delete_booking, name='delete_booking'),
+    path('api/booking_details/<int:booking_id>/', views.booking_details, name='booking_details'),
+    path('api/airports', views.airports, name='airports'),
 ]
