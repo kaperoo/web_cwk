@@ -45,7 +45,7 @@ def flight_list(request):
 
         flight_data.append({
             'flight_id': flight.id,
-            'price': flight.price,
+            'price': float(flight.price),
             'airline': 'Air Polonia',
             'origin': origin,
             'destination': destination,
@@ -279,7 +279,7 @@ def confirm_payment(request, booking_id):
             booking_data = {
                 'booking_id': booking.id,
                 'flight_id': booking.flight.id,
-                'price': booking.price,
+                'price': float(booking.price),
                 'insurance': booking.insurance,
                 'status': booking.status,
                 'passengers': passenger_list,
