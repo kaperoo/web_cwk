@@ -220,8 +220,21 @@ def book_flight(request, flight_id):
         return JsonResponse({'error': 'Invalid request method'}, status=405)
 
 def confirm_payment_with_psp(psp_provider, psp_checkout_id, amount_paid):
-    # Replace 'your-api-key' with the actual API key for the PSP
 
+    PSP_APIS = {
+        1: {
+            "link": "http://sc20cah.pythonanywhere.com",
+            "key": "1d79b10b-bb8b-4f84-9d57-49a183c6dd9e"
+        },
+        2: {
+            "link": "http://sc20ap.pythonanywhere.com",
+            "key": "1d79b10b-bb8b-4f84-9d57-49a183c6dd9e"
+        },
+        3: {
+            "link": "http://sc20sh.pythonanywhere.com",
+            "key": "1d79b10b-bb8b-4f84-9d57-49a183c6dd9e"
+        }
+    }
     # PAYMENT_API_LINK_1="http://sc20cah.pythonanywhere.com/"
     # PAYMENT_API_KEY_1 ="1d79b10b-bb8b-4f84-9d57-49a183c6dd9e"
     # PAYMENT_API_LINK_2="http://sc20ap.pythonanywhere.com/"
@@ -229,8 +242,8 @@ def confirm_payment_with_psp(psp_provider, psp_checkout_id, amount_paid):
     # PAYMENT_API_LINK_3="http://sc20sh.pythonanywhere.com/"
     # PAYMENT_API_KEY_3 ="1d79b10b-bb8b-4f84-9d57-49a183c6dd9e"
 
-    headers = {'Authorization': 'Bearer your-api-key'}
-    url = f"https://{psp_provider}/api/checkout/{psp_checkout_id}/status"
+    headers = {'Authorization': PSP_APIS[psp_provider]["key"]}
+    url = f"{PSP_APIS[psp_provider]['link']}/api/checkout/{psp_checkout_id}/status"
 
     response = requests.get(url, headers=headers)
 
