@@ -68,17 +68,18 @@ def flight_search(request):
 
         origin = data.get('origin')
         destination = data.get('destination')
-        departure_date = datetime.datetime.strptime(data.get('departure_date'), '%Y-%m-%d').date()
+        departure_date = data.get('departure_date')
         number_of_people = data.get('number_of_people')
+
+        # Convert the departure_date to a datetime object
+        departure_datetime = datetime.datetime.fromisoformat(departure_date)
 
         # find flights that match the origin, destination and departure date
         flights = Flight.objects.filter(
             origin__code=origin,
             destination__code=destination,
-            departure_time__date=departure_date
+            departure_time__date=departure_datetime.date()
         ).annotate(available_seats=Count('seats')).filter(available_seats__gte=number_of_people)
-
-        print(flights)
 
         flight_data = []
 
@@ -117,7 +118,7 @@ def flight_search(request):
 
             flight_data.append({
                 'flight_id': flight.id,
-                'price': flight.price,
+                'price': float(flight.price),
                 'airline': 'Air Polonia',
                 'origin': origin,
                 'destination': destination,
