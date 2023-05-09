@@ -164,7 +164,7 @@ def book_flight(request, flight_id):
         total_price += booking.price * len(passengers_data)
         passengers = []
         for passenger_data in passengers_data:
-            seat = Seat.objects.get(id=passenger_data['seat'])
+            seat = Seat.objects.get(name=passenger_data['seat'])
 
             # Remove the seat from the FlightSeat relationship
             flight_seat = FlightSeat.objects.get(flight=flight, seat=seat)
