@@ -147,87 +147,80 @@ def book_flight(request, flight_id):
         except Flight.DoesNotExist:
             return JsonResponse({'error': 'Flight not found'}, status=404)
 
+        total_price = 0
+
+        passengers_data = data.get('passengers')
+        priority = data.get('priority')
+        insurance = data.get('insurance')
+
         with transaction.atomic():
-            try:
-                total_price = 0
+            booking = Booking(
+                flight=flight,
+                price=flight.price,
+                insurance=insurance,
+                status="Waiting for payment",
+                start_time=datetime.datetime.now()
+            )
+            booking.save()
 
-                passengers_data = data.get('passengers')
-                priority = data.get('priority')
-                insurance = data.get('insurance')
+            total_price += booking.price * len(passengers_data)
+            passengers = []
+            for passenger_data in passengers_data:
+                try:
+                    seat = Seat.objects.select_for_update().get(name=passenger_data['seat'])
+                    flight_seat = FlightSeat.objects.select_for_update().get(flight=flight, seat=seat)
+                except (Seat.DoesNotExist, FlightSeat.DoesNotExist):
+                    transaction.set_rollback(True)
+                    return JsonResponse({'error': 'Seat not found or already reserved'}, status=400)
 
-                booking = Booking(
-                    flight=flight,
-                    price=flight.price,  # Replace with your logic to calculate the combined price
-                    insurance=insurance,
-                    status="Waiting for payment",
-                    start_time=datetime.datetime.now()
+                flight_seat.delete()
+
+                total_price += seat.price
+
+                luggage_list = [{"luggage": Luggage.objects.get(luggage_type=l['type']), "quantity": l['quantity']} for l in passenger_data['luggage']]
+
+                passenger = Customer(
+                    first_name=passenger_data['first_name'],
+                    surname=passenger_data['last_name'],
+                    passport=passenger_data['passport_id'],
+                    seat=seat
                 )
-                booking.save()
+                passenger.save()
 
-                total_price += booking.price * len(passengers_data)
-                passengers = []
-                for passenger_data in passengers_data:
-                    seat = Seat.objects.get(name=passenger_data['seat'])
+                for luggage_entry in luggage_list:
+                    luggage = luggage_entry['luggage']
+                    quantity = luggage_entry['quantity']
+                    total_price += luggage.price * quantity
+                    customer_luggage = CustomerLuggage(customer=passenger, luggage=luggage, quantity=quantity)
+                    customer_luggage.save()
 
-                    # Check if the seat is available
-                    try:
-                        flight_seat = FlightSeat.objects.get(flight=flight, seat=seat)
-                    except FlightSeat.DoesNotExist:
-                        raise ValueError(f"Seat {seat.name} is not available")
+                booking.customers.add(passenger)
+                passengers.append(passenger)
 
-                    # Remove the seat from the FlightSeat relationship
-                    flight_seat.delete()
+            booking.price = total_price
+            booking.save()
 
-                    total_price += seat.price
+        response_data = {
+            'flight_id': flight_id,
+            'booking_id': booking.id,
+            'combined_price': float(booking.price),
+            'passengers': [
+                {
+                    'customer_id': passenger.id,
+                    'first_name': passenger.first_name,
+                    'last_name': passenger.surname,
+                    'passport_id': passenger.passport,
+                    'seat': passenger.seat.id,
+                    'luggage': [{'type': cl.luggage.luggage_type, 'quantity': cl.quantity} for cl in passenger.customerluggage_set.all()]
+                }
+                for passenger in passengers
+            ],
+            'priority': priority,
+            'insurance': insurance,
+            'status': booking.status
+        }
 
-                    luggage_list = [{"luggage": Luggage.objects.get(luggage_type=l['type']), "quantity": l['quantity']} for l in passenger_data['luggage']]
-
-                    passenger = Customer(
-                        first_name=passenger_data['first_name'],
-                        surname=passenger_data['last_name'],
-                        passport=passenger_data['passport_id'],
-                        seat=seat
-                    )
-                    passenger.save()
-
-                    for luggage_entry in luggage_list:
-                        luggage = luggage_entry['luggage']
-                        quantity = luggage_entry['quantity']
-                        total_price += luggage.price * quantity
-                        customer_luggage = CustomerLuggage(customer=passenger, luggage=luggage, quantity=quantity)
-                        customer_luggage.save()
-
-                    booking.customers.add(passenger)
-                    passengers.append(passenger)
-
-                booking.price = total_price
-                booking.save()
-
-            except Exception as e:
-                transaction.rollback()
-                return JsonResponse({'error': str(e)}, status=400)
-
-            response_data = {
-                'flight_id': flight_id,
-                'booking_id': booking.id,
-                'combined_price': float(booking.price),
-                'passengers': [
-                    {
-                        'customer_id': passenger.id,
-                        'first_name': passenger.first_name,
-                        'last_name': passenger.surname,
-                        'passport_id': passenger.passport,
-                        'seat': passenger.seat.id,
-                        'luggage': [{'type': cl.luggage.luggage_type, 'quantity': cl.quantity} for cl in passenger.customerluggage_set.all()]
-                    }
-                    for passenger in passengers
-                ],
-                'priority': priority,
-                'insurance': insurance,
-                'status': booking.status
-            }
-
-            return JsonResponse(response_data)
+        return JsonResponse(response_data)
     else:
         return JsonResponse({'error': 'Invalid request method'}, status=405)
 
@@ -258,7 +251,6 @@ def confirm_payment_with_psp(psp_provider, psp_checkout_id, amount_paid):
     url = f"{PSP_APIS[psp_provider]['link']}/api/checkout/{psp_checkout_id}/status"
 
     response = requests.get(url, headers=headers)
-    print(response)
 
     if response.status_code == 200:
         response_data = response.json()
