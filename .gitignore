@@ -2,3 +2,4 @@ pop*
 sendreq*
 airline/__pycache__
 air_polonia/__pycache__
+*.sqlite3
