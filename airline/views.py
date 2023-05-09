@@ -258,6 +258,7 @@ def confirm_payment_with_psp(psp_provider, psp_checkout_id, amount_paid):
     url = f"{PSP_APIS[psp_provider]['link']}/api/checkout/{psp_checkout_id}/status"
 
     response = requests.get(url, headers=headers)
+    print(response)
 
     if response.status_code == 200:
         response_data = response.json()
