@@ -177,7 +177,7 @@ def book_flight(request, flight_id):
             passenger = Customer(
                 first_name=passenger_data['first_name'],
                 surname=passenger_data['last_name'],
-                passport=passenger_data['passportID'],
+                passport=passenger_data['passport_id'],
                 seat=seat
             )
             passenger.save()
@@ -204,7 +204,7 @@ def book_flight(request, flight_id):
                     'customer_id': passenger.id,
                     'first_name': passenger.first_name,
                     'last_name': passenger.surname,
-                    'passportID': passenger.passport,
+                    'passport_id': passenger.passport,
                     'seat': passenger.seat.id,
                     'luggage': [{'type': cl.luggage.luggage_type, 'quantity': cl.quantity} for cl in passenger.customerluggage_set.all()]
                 }
