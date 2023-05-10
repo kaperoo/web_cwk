@@ -15,14 +15,22 @@ def flight_list(request):
         seats = flight.seats.all()
         seat_data = []
 
-        for seat in seats:
-            seat_data.append({
-                'seat_id': seat.id,
-                'seat_name': seat.name,
-                'class': seat.seat_class,
-                'price': float(seat.price + flight.price),
-                'status': flight.flightseat_set.get(seat=seat).status,
-            })
+        # for seat in seats:
+        #     seat_data.append({
+        #         'seat_id': seat.id,
+        #         'seat_name': seat.name,
+        #         'class': seat.seat_class,
+        #         'price': float(seat.price + flight.price),
+        #         'status': flight.flightseat_set.get(seat=seat).status,
+        #     })
+
+        seat_data.append({
+            'seat_id': seats[32].id,
+            'seat_name': seats[32].name,
+            'class': seats[32].seat_class,
+            'price': float(seats[32].price + flight.price),
+            'status': flight.flightseat_set.get(seat=seats[32]).status,
+        })
 
         luggage_pricing = {luggage.luggage_type: float(luggage.price) for luggage in Luggage.objects.all()}
 
