@@ -1,0 +1,327 @@
+request: sc20kr.pythonanywhere.com/api/flight_list
+response:
+{
+    "flights": [
+        {
+            "flight_id": 1,
+            "price": 241.32,
+            "airline": "Air Polonia",
+            "origin": {
+                "id": 1,
+                "name": "Poznań-Ławica Airport",
+                "city": "Poznań",
+                "country": "Poland",
+                "code": "POZ",
+                "terminals": 2
+            },
+            "destination": {
+                "id": 4,
+                "name": "Wrocław-Copernicus Airport",
+                "city": "Wrocław",
+                "country": "Poland",
+                "code": "WRO",
+                "terminals": 1
+            },
+            "departure_time": "2023-05-12T18:17:00+00:00",
+            "arrival_time": "2023-05-12T23:39:00+00:00",
+            "duration": 322,
+            "luggage_pricing": {
+                "cabin": 0.0,
+                "carry-on": 20.0,
+                "checked-in": 30.0
+            },
+            "priority_price": 5,
+            "insurance_price": 10,
+            "plane_type": "Boeing 737"
+        },
+        ...
+    ]
+}
+
+request: sc20kr.pythonanywhere.com/api/flight
+{
+    "origin": "AMS",
+    "destination": "GDN",
+    "departure_date": "2023-08-29",
+    "number_of_people": 1
+}
+response:
+{
+    "flights": [
+        {
+            "flight_id": 400,
+            "price": 138.23,
+            "airline": "Air Polonia",
+            "origin": {
+                "id": 8,
+                "name": "Amsterdam Airport Schiphol",
+                "city": "Amsterdam",
+                "country": "Netherlands",
+                "code": "AMS",
+                "terminals": 1
+            },
+            "destination": {
+                "id": 5,
+                "name": "Gdańsk Lech Wałęsa Airport",
+                "city": "Gdańsk",
+                "country": "Poland",
+                "code": "GDN",
+                "terminals": 2
+            },
+            "departure_time": "2023-08-29T21:03:00+00:00",
+            "arrival_time": "2023-08-30T00:36:00+00:00",
+            "duration": 213,
+            "seats": [
+                {
+                    "seat_id": 1,
+                    "seat_name": "1A",
+                    "class": "First Class",
+                    "price": 1138.23,
+                    "status": "Available"
+                },
+                {
+                    "seat_id": 9,
+                    "seat_name": "3A",
+                    "class": "Business Class",
+                    "price": 638.23,
+                    "status": "Available"
+                },
+                {
+                    "seat_id": 21,
+                    "seat_name": "6A",
+                    "class": "Economy Class",
+                    "price": 138.23,
+                    "status": "Available"
+                }
+            ],
+            "luggage_pricing": {
+                "cabin": 0.0,
+                "carry-on": 20.0,
+                "checked-in": 30.0
+            },
+            "priority_price": 5,
+            "insurance_price": 10,
+            "plane_type": "Boeing 737"
+        }
+    ]
+}
+
+request: sc20kr.pythonanywhere.com/api/book/400
+{
+  "passengers": [
+    {
+      "first_name": "John",
+      "last_name": "Doe",
+      "passport_id": "123456789",
+      "seat": "20A",
+      "luggage": [
+                {
+                    "type": "carry-on",
+                    "quantity": 2
+                },
+                {
+                    "type": "checked-in",
+                    "quantity": 1
+                }
+            ]
+    },
+    {
+      "first_name": "Jane",
+      "last_name": "Doe",
+      "passport_id": "987654321",
+      "seat": "20B",
+      "luggage": [
+                {
+                    "type": "carry-on",
+                    "quantity": 2
+                },
+                {
+                    "type": "checked-in",
+                    "quantity": 1
+                }
+            ]
+    }
+  ],
+  "priority": true,
+  "insurance": true
+}
+response:
+{
+    "flight_id": 400,
+    "booking_id": 14,
+    "combined_price": 416.46,
+    "passengers": [
+        {
+            "customer_id": 15,
+            "first_name": "John",
+            "last_name": "Doe",
+            "passport_id": "123456789",
+            "seat": 105,
+            "luggage": [
+                {
+                    "type": "carry-on",
+                    "quantity": 2
+                },
+                {
+                    "type": "checked-in",
+                    "quantity": 1
+                }
+            ]
+        },
+        {
+            "customer_id": 16,
+            "first_name": "Jane",
+            "last_name": "Doe",
+            "passport_id": "987654321",
+            "seat": 106,
+            "luggage": [
+                {
+                    "type": "carry-on",
+                    "quantity": 2
+                },
+                {
+                    "type": "checked-in",
+                    "quantity": 1
+                }
+            ]
+        }
+    ],
+    "priority": true,
+    "insurance": true,
+    "status": "Waiting for payment"
+}
+
+request: sc20kr.pythonanywhere.com/api/airports
+response: 
+{
+    "airports": [
+        {
+            "id": 1,
+            "name": "Poznań-Ławica Airport",
+            "country": "Poland",
+            "city": "Poznań",
+            "code": "POZ",
+            "terminals": 2
+        },
+        {
+            "id": 2,
+            "name": "John Paul II International Airport Kraków-Balice",
+            "country": "Poland",
+            "city": "Kraków",
+            "code": "KRK",
+            "terminals": 1
+        },
+        {
+            "id": 3,
+            "name": "Warsaw Chopin Airport",
+            "country": "Poland",
+            "city": "Warsaw",
+            "code": "WAW",
+            "terminals": 2
+        },
+    ]
+}
+
+request: sc20kr.pythonanywhere.com/api/pay/44
+{
+    "psp_provider": 1,
+    "psp_checkout_id": 25,
+    "amount": 567.57
+}
+response:
+{
+    "error": "Booking not found"
+}
+
+request: sc20kr.pythonanywhere.com/api/flight/400
+response:
+{
+    "flights": [
+        {
+            "flight_id": 400,
+            "price": 138.23,
+            "airline": "Air Polonia",
+            "origin": {
+                "id": 8,
+                "name": "Amsterdam Airport Schiphol",
+                "city": "Amsterdam",
+                "country": "Netherlands",
+                "code": "AMS",
+                "terminals": 1
+            },
+            "destination": {
+                "id": 5,
+                "name": "Gdańsk Lech Wałęsa Airport",
+                "city": "Gdańsk",
+                "country": "Poland",
+                "code": "GDN",
+                "terminals": 2
+            },
+            "departure_time": "2023-08-29T21:03:00+00:00",
+            "arrival_time": "2023-08-30T00:36:00+00:00",
+            "duration": 213,
+            "seats": [
+                {
+                    "seat_id": 1,
+                    "seat_name": "1A",
+                    "class": "First Class",
+                    "price": 1138.23,
+                    "status": "Available"
+                },
+                {
+                    "seat_id": 9,
+                    "seat_name": "3A",
+                    "class": "Business Class",
+                    "price": 638.23,
+                    "status": "Available"
+                },
+                {
+                    "seat_id": 21,
+                    "seat_name": "6A",
+                    "class": "Economy Class",
+                    "price": 138.23,
+                    "status": "Available"
+                }
+            ],
+            "luggage_pricing": {
+                "cabin": 0.0,
+                "carry-on": 20.0,
+                "checked-in": 30.0
+            },
+            "priority_price": 5,
+            "insurance_price": 10,
+            "plane_type": "Boeing 737"
+        }
+    ]
+}
+
+request: sc20kr.pythonanywhere.com/api/delete/14
+response:
+{
+    "result": "Deleted"
+}
+
+request: sc20kr.pythonanywhere.com/api/booking_details/1
+response:
+{
+    "booking_id": 1,
+    "flight_id": 396,
+    "price": 157.94,
+    "insurance": true,
+    "status": "Waiting for payment",
+    "passengers": [
+        {
+            "customer_id": 1,
+            "first_name": "John",
+            "last_name": "Doe",
+            "passport": "123321",
+            "seat": "12D",
+            "luggage": [
+                {
+                    "type": "cabin",
+                    "quantity": 1
+                }
+            ]
+        }
+    ]
+}
