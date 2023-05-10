@@ -129,7 +129,6 @@ def flight_details(request, flight_id):
 
     return JsonResponse({'flights': flight_data})
 
-
 @csrf_exempt
 def flight_search(request):
     if request.method == 'POST':
@@ -364,7 +363,7 @@ def confirm_payment(request, booking_id):
                     'first_name': passenger.first_name,
                     'last_name': passenger.surname,
                     'passport': passenger.passport,
-                    'seat': passenger.seat.name,
+                    'seat': CustomerSeat.objects.get(customer=passenger, flight=booking.flight).seat.id,
                     'luggage': [{'type': cl.luggage.luggage_type, 'quantity': cl.quantity} for cl in passenger.customerluggage_set.all()]
                 })
 
