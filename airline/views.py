@@ -12,8 +12,8 @@ def flight_list(request):
     flight_data = []
 
     for flight in flights:
-        seats = flight.seats.all()
-        seat_data = []
+        # seats = flight.seats.all()
+        # seat_data = []
 
         # for seat in seats:
         #     seat_data.append({
@@ -24,13 +24,13 @@ def flight_list(request):
         #         'status': flight.flightseat_set.get(seat=seat).status,
         #     })
 
-        seat_data.append({
-            'seat_id': seats[32].id,
-            'seat_name': seats[32].name,
-            'class': seats[32].seat_class,
-            'price': float(seats[32].price + flight.price),
-            'status': flight.flightseat_set.get(seat=seats[32]).status,
-        })
+        # seat_data.append({
+        #     'seat_id': seats[32].id,
+        #     'seat_name': seats[32].name,
+        #     'class': seats[32].seat_class,
+        #     'price': float(seats[32].price + flight.price),
+        #     'status': flight.flightseat_set.get(seat=seats[32]).status,
+        # })
 
         luggage_pricing = {luggage.luggage_type: float(luggage.price) for luggage in Luggage.objects.all()}
 
@@ -61,7 +61,7 @@ def flight_list(request):
             'departure_time': flight.departure_time.isoformat(),
             'arrival_time': flight.arrival_time.isoformat(),
             'duration': int(flight.duration.total_seconds() / 60),
-            'seats': seat_data,
+            # 'seats': seat_data,
             'luggage_pricing': luggage_pricing,
             'priority_price': 5,
             'insurance_price': 10,
