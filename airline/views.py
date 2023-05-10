@@ -71,6 +71,66 @@ def flight_list(request):
     return JsonResponse({'flights': flight_data})
 
 @csrf_exempt
+def flight_details(request, flight_id):
+    try:
+        flight = Flight.objects.get(id=flight_id)
+    except Flight.DoesNotExist:
+        return JsonResponse({'error': 'Flight not found'}, status=404)
+
+
+    flight_data = []
+    seats = flight.seats.all()
+    seat_data = []
+
+    for seat in seats:
+        seat_data.append({
+            'seat_id': seat.id,
+            'seat_name': seat.name,
+            'class': seat.seat_class,
+            'price': float(seat.price + flight.price),
+            'status': flight.flightseat_set.get(seat=seat).status,
+        })
+
+    luggage_pricing = {luggage.luggage_type: float(luggage.price) for luggage in Luggage.objects.all()}
+
+    origin = {
+        'id': flight.origin.id,
+        'name': flight.origin.name,
+        'city': flight.origin.city,
+        'country': flight.origin.country,
+        'code': flight.origin.code,
+        'terminals': flight.origin.terminals
+    }
+
+    destination = {
+        'id': flight.destination.id,
+        'name': flight.destination.name,
+        'city': flight.destination.city,
+        'country': flight.destination.country,
+        'code': flight.destination.code,
+        'terminals': flight.destination.terminals
+    }
+
+    flight_data.append({
+        'flight_id': flight.id,
+        'price': float(flight.price),
+        'airline': 'Air Polonia',
+        'origin': origin,
+        'destination': destination,
+        'departure_time': flight.departure_time.isoformat(),
+        'arrival_time': flight.arrival_time.isoformat(),
+        'duration': int(flight.duration.total_seconds() / 60),
+        'seats': seat_data,
+        'luggage_pricing': luggage_pricing,
+        'priority_price': 5,
+        'insurance_price': 10,
+        'plane_type': flight.plane_type,
+    })
+
+    return JsonResponse({'flights': flight_data})
+
+
+@csrf_exempt
 def flight_search(request):
     if request.method == 'POST':
         data = json.loads(request.body)
