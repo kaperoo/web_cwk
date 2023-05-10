@@ -1,6 +1,7 @@
 from django.db import models
 
 class Airport(models.Model):
+    id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100)
     city = models.CharField(max_length=100)
     country = models.CharField(max_length=100)
@@ -12,6 +13,7 @@ class Airport(models.Model):
 
 
 class Flight(models.Model):
+    id = models.AutoField(primary_key=True)
     origin = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="departures")
     destination = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="arrivals")
     price = models.DecimalField(max_digits=10, decimal_places=2)
@@ -23,7 +25,7 @@ class Flight(models.Model):
     seats = models.ManyToManyField('Seat', through='FlightSeat')
 
     def __str__(self):
-        return f"{self.origin} - {self.destination}"
+        return f"#{self.id} {self.origin.code} - {self.destination.code} ({self.departure_time.date()})"
 
 
 class Seat(models.Model):
@@ -37,6 +39,7 @@ class Seat(models.Model):
 class FlightSeat(models.Model):
     flight = models.ForeignKey(Flight, on_delete=models.CASCADE)
     seat = models.ForeignKey(Seat, on_delete=models.CASCADE)
+    status = models.CharField(max_length=100, default='Available')
 
     class Meta:
         unique_together = ('flight', 'seat')
@@ -53,14 +56,22 @@ class Luggage(models.Model):
         return self.luggage_type
 
 class Customer(models.Model):
+    id = models.AutoField(primary_key=True)
     first_name = models.CharField(max_length=100)
     surname = models.CharField(max_length=100)
-    seat = models.OneToOneField(Seat, on_delete=models.SET_NULL, null=True)
     luggages = models.ManyToManyField(Luggage, through='CustomerLuggage')
     passport = models.CharField(max_length=20)
 
     def __str__(self):
-        return f"{self.first_name} {self.surname}"
+        return f"{self.first_name} {self.surname} #{self.id}"
+    
+class CustomerSeat(models.Model):
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    seat = models.ForeignKey(Seat, on_delete=models.CASCADE)
+    flight = models.ForeignKey(Flight, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.customer.surname} {self.customer.id}# - Seat: {self.seat.name} on Flight {self.flight.id}#"
 
 class CustomerLuggage(models.Model): 
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
@@ -71,6 +82,7 @@ class CustomerLuggage(models.Model):
         return f"{self.customer} - {self.luggage} (x{self.quantity})"
 
 class Booking(models.Model):
+    id = models.AutoField(primary_key=True)
     flight = models.ForeignKey(Flight, on_delete=models.CASCADE)
     customers = models.ManyToManyField(Customer) 
     price = models.DecimalField(max_digits=10, decimal_places=2)
@@ -79,4 +91,4 @@ class Booking(models.Model):
     start_time = models.DateTimeField()
 
     def __str__(self):
-        return f"{self.customers} - {self.flight}"
+        return f"Booking #{self.id} - Flight {self.flight}"

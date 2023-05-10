@@ -1,5 +1,5 @@
 from django.http import JsonResponse
-from .models import Flight, Seat, Luggage, Customer, Booking, FlightSeat, Airport, CustomerLuggage
+from .models import Flight, Seat, Luggage, Customer, Booking, FlightSeat, Airport, CustomerLuggage, CustomerSeat
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Count
 from django.db import transaction
@@ -21,7 +21,7 @@ def flight_list(request):
                 'seat_name': seat.name,
                 'class': seat.seat_class,
                 'price': float(seat.price + flight.price),
-                'status': 'Available',  # Assuming all seats are available
+                'status': flight.flightseat_set.get(seat=seat).status,
             })
 
         luggage_pricing = {luggage.luggage_type: float(luggage.price) for luggage in Luggage.objects.all()}
@@ -94,7 +94,7 @@ def flight_search(request):
                     'seat_name': seat.name,
                     'class': seat.seat_class,
                     'price': float(seat.price + flight.price),
-                    'status': 'Available',  # Assuming all seats are available
+                    'status': flight.flightseat_set.get(seat=seat).status,
                 })
 
             origin = {
@@ -153,6 +153,7 @@ def book_flight(request, flight_id):
         priority = data.get('priority')
         insurance = data.get('insurance')
 
+        # Use the atomic transaction to ensure that all database operations are rolled back if any of them fail
         with transaction.atomic():
             booking = Booking(
                 flight=flight,
@@ -183,9 +184,14 @@ def book_flight(request, flight_id):
                     first_name=passenger_data['first_name'],
                     surname=passenger_data['last_name'],
                     passport=passenger_data['passport_id'],
-                    seat=seat
+                    # Remove the seat assignment
+                    # seat=seat
                 )
                 passenger.save()
+
+                # Add this after saving the passenger
+                customer_seat = CustomerSeat(customer=passenger, seat=seat, flight=flight)
+                customer_seat.save()
 
                 for luggage_entry in luggage_list:
                     luggage = luggage_entry['luggage']
@@ -210,7 +216,7 @@ def book_flight(request, flight_id):
                     'first_name': passenger.first_name,
                     'last_name': passenger.surname,
                     'passport_id': passenger.passport,
-                    'seat': passenger.seat.id,
+                    'seat': CustomerSeat.objects.get(customer=passenger, flight=flight).seat.id,
                     'luggage': [{'type': cl.luggage.luggage_type, 'quantity': cl.quantity} for cl in passenger.customerluggage_set.all()]
                 }
                 for passenger in passengers
@@ -325,12 +331,15 @@ def booking_details(request, booking_id):
                 'quantity': cl.quantity
             })
 
+        # Get the seat for the current passenger
+        customer_seat = CustomerSeat.objects.get(customer=passenger, flight=booking.flight)
+
         passenger_list.append({
             'customer_id': passenger.id,
             'first_name': passenger.first_name,
             'last_name': passenger.surname,
             'passport': passenger.passport,
-            'seat': passenger.seat.name,
+            'seat': customer_seat.seat.name,  # Use the seat from CustomerSeat relationship
             'luggage': luggage_list
         })
 
@@ -353,20 +362,22 @@ def delete_booking(request, booking_id):
         except Booking.DoesNotExist:
             return JsonResponse({'error': 'Booking not found'}, status=404)
 
-        # Get all passengers in the booking and their associated seats
+        # Get all passengers in the booking
         passengers = booking.customers.all()
-        seat_ids = [passenger.seat.id for passenger in passengers]
+
+        # Remove all passenger-seat relationships for the booking and add the seats back to the FlightSeat relationship
+        for passenger in passengers:
+            customer_seat = CustomerSeat.objects.filter(customer=passenger, flight=booking.flight)
+            for cs in customer_seat:
+                FlightSeat.objects.create(flight=booking.flight, seat=cs.seat)
+            customer_seat.delete()
+
+            # Remove all customer-luggage relationships for the passenger
+            customer_luggage = CustomerLuggage.objects.filter(customer=passenger)
+            customer_luggage.delete()
 
         # Remove all passengers in the booking
         passengers.delete()
-
-        # Add the seats back to the FlightSeat relationship
-        flight = booking.flight
-        for seat_id in seat_ids:
-            seat = Seat.objects.get(id=seat_id)
-            flight_seat, created = FlightSeat.objects.get_or_create(flight=flight, seat=seat)
-            if created:
-                flight_seat.save()
 
         # Remove the booking from the database
         booking.delete()
