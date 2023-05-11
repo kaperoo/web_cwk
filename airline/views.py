@@ -312,15 +312,15 @@ def confirm_payment_with_psp(psp_provider, psp_checkout_id, amount_paid):
 
     # PSP API details
     PSP_APIS = {
-        1: {
+        0: {
             "link": "http://sc20cah.pythonanywhere.com",
             "key": "1d79b10b-bb8b-4f84-9d57-49a183c6dd9e"
         },
-        2: {
+        1: {
             "link": "http://sc20ap.pythonanywhere.com",
             "key": "1d79b10b-bb8b-4f84-9d57-49a183c6dd9e"
         },
-        3: {
+        2: {
             "link": "http://sc20sh.pythonanywhere.com",
             "key": "1d79b10b-bb8b-4f84-9d57-49a183c6dd9e"
         }
