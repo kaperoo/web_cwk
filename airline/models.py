@@ -93,6 +93,7 @@ class Booking(models.Model):
     customers = models.ManyToManyField(Customer) 
     price = models.DecimalField(max_digits=10, decimal_places=2)
     insurance = models.BooleanField(default=False)
+    priority = models.BooleanField(default=False)
     status = models.CharField(max_length=100)
     start_time = models.DateTimeField()
 

@@ -233,6 +233,7 @@ def book_flight(request, flight_id):
                 flight=flight,
                 price=flight.price,
                 insurance=insurance,
+                priority=priority,
                 status="Waiting for payment",
                 start_time=datetime.datetime.now()
             )
@@ -431,6 +432,7 @@ def booking_details(request, booking_id):
             'flight_id': booking.flight.id,
             'price': float(booking.price),
             'insurance': booking.insurance,
+            'priority': booking.priority,
             'status': booking.status,
             'passengers': passenger_list,
         }
